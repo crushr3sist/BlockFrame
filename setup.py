@@ -1,12 +1,15 @@
 from setuptools import find_packages, setup
 
+with open("README.md", "r") as f:
+    long_description = f.read()
+
 setup(
     name="BlockFrame",
     version="0.1.5",
     author="Rohaan Ahmed",
     author_email="silent.death3500@gmail.com",
     description="File Chunking Library to work as a data-store solution alongside webapps and software.",
-    long_description="",
+    long_description=long_description,
     long_description_content_type="text/markdown",
     packages=find_packages(),
     classifiers=[

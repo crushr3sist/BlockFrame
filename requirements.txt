@@ -1,3 +1,4 @@
-cryptography==40.0.2
+cryptography==39.0.0
+pytest==7.2.1
 setuptools==65.5.0
-SQLAlchemy==2.0.12
+SQLAlchemy==2.0.11

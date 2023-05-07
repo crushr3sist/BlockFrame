@@ -134,7 +134,7 @@ class ChunkHandler:
                     split_files = self.time_based_chunks()
                 case "secure":
                     split_files = self.secure_chunks()
-        existing_chunks = [
+        [
             x
             for x in os.listdir(self.path)
             if x.startswith(f"{self.primary_uuid}_chunk_")
