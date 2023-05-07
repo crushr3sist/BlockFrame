@@ -2,7 +2,15 @@
 file-store
 build.bat
 *.chunk
+*.db
+*.bat
+*.jpg
+*.txt
 
+utils.py
+main.py
+
+venv/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
