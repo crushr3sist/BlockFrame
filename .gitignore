@@ -9,7 +9,7 @@ build.bat
 
 utils.py
 main.py
-
+icons/
 venv/
 
 # Byte-compiled / optimized / DLL files

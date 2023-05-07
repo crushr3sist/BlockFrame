@@ -1,5 +1,7 @@
 # BlockFrame
 
+![alt text](https://imgur.com/GGHdpCe)
+
 BlockFrame is a file chunking library designed to work as a data-store solution alongside web apps and software. It provides a simple and flexible way to store large files by breaking them into smaller chunks that can be easily managed and retrieved.
 
 ## Features
