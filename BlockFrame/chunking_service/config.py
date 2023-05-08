@@ -1,7 +1,7 @@
 import json
-import json
 import xml.etree.ElementTree as ET
 from types import SimpleNamespace
+import tomllib as toml
 
 
 class Config:

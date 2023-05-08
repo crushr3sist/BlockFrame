@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setup(
     name="BlockFrame",
-    version="1.0.0",
+    version="1.0.5",
     author="Rohaan Ahmed",
     author_email="silent.death3500@gmail.com",
     description="File Chunking Library to work as a data-store solution alongside webapps and software.",
@@ -20,6 +20,8 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
     ],
     install_requires=["cryptography", "SQLAlchemy", "setuptools", "wheel", "aiosqlite"],
     python_requires=">=3.6",

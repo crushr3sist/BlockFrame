@@ -1,0 +1,6 @@
+{
+  "file-storage-path": "./file-store/",
+  "database": {
+    "uri": "sqlite:///blockframe_db.db"
+  }
+}

@@ -4,7 +4,7 @@ import os
 import pathlib
 import uuid
 from datetime import datetime, timedelta
-
+import tempfile
 from ..database_service.defaultmodel import ChunkHashes, DefaultChunkModel
 
 
@@ -25,25 +25,45 @@ class ChunkHandler:
         self.chunk_time_estimate = timedelta(seconds=1)
 
     def target(
-        self, file_name, size=None, files: list = None, custom_chunker: callable = None
+        self,
+        file_bytes=None,
+        file_name=None,
+        size=None,
+        files: list = None,
+        custom_chunker: callable = None,
     ):
-        self.file_name = file_name
-        self.size = size
+        self.custom_chunker = custom_chunker
         self.primary_uuid = uuid.uuid4()
         self.original_file_hash = ""
         self.chunk_file_hashes = []
+        self.file_name = file_name
+        self.file_bytes = file_bytes
         self.chunk_file_uid = []
         self.files = files
-        self.custom_chunker = custom_chunker
-        if not pathlib.Path(self.file_name) or not pathlib.Path(self.file_name).exists:
-            raise FileNotFoundError
-        return "correctly targeted"
+        self.size = size
+        if file_bytes:
+            with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+                if file_name and isinstance(file_name, str):
+                    self.file_name = file_name
+                else:
+                    temp_file.write(file_bytes)
+                    self.file_name = temp_file.name
+
+        elif self.file_name is None:
+            raise ValueError("Either file_bytes or file_name must be provided")
+        elif not pathlib.Path(self.file_name).exists:
+            raise FileNotFoundError(f"{self.file_name} does not exist")
 
     def generic_chunks(self):
-        _size = os.stat(self.file_name).st_size // self.size
-        with open(self.file_name, "rb") as f:
-            while content := f.read(_size):
-                yield content
+        if self.file_bytes:
+            _size = len(self.file_bytes) // self.size
+            for i in range(self.size):
+                yield self.file_bytes[i * _size : (i + 1) * _size]
+        else:
+            _size = os.stat(self.file_name).st_size // self.size
+            with open(self.file_name, "rb") as f:
+                while content := f.read(_size):
+                    yield content
 
     def time_based_chunks(self):
         self.chunk_counter = 0
@@ -70,7 +90,6 @@ class ChunkHandler:
                     remaining_time_estimate = (
                         remaining_bytes / transfer_rate.total_seconds()
                     )
-                    # adjust the chunk size based on the predicted time to optimize transfer time
                     self.chunk_time_estimate = (
                         remaining_time_estimate / self.window_size
                     )
@@ -141,7 +160,7 @@ class ChunkHandler:
         ]
 
         with self.db as session:
-            if existing_models := (
+            if (
                 session.query(DefaultChunkModel)
                 .filter_by(file_name=self.file_name)
                 .all()

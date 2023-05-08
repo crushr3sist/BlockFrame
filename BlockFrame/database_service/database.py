@@ -1,7 +1,10 @@
 import contextlib
 from BlockFrame.database_service.defaultmodel import DefaultChunkModel
 from BlockFrame.database_service.getters import BlockFrameDatabaseGetters
-from BlockFrame.database_service.initalisation import *
+from BlockFrame.database_service.initalisation import (
+    BlockFrameDatabaseInit,
+    DatabaseInterface,
+)
 
 
 class BlockFrameDatabase(BlockFrameDatabaseGetters, BlockFrameDatabaseInit):
@@ -21,6 +24,9 @@ class BlockFrameDatabase(BlockFrameDatabaseGetters, BlockFrameDatabaseInit):
 
         if not self.database_obj:
             self.database_obj = self.get_db()
+
+        # create the table
+        self.create_table(DefaultChunkModel)
 
         super().__init__(
             class_model=self.class_model,
