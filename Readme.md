@@ -28,27 +28,23 @@ Here's an example of how to use BlockFrame to chunk and store a file:
 ```py
 import pathlib
 
-from BlockFrame import BlockFrame
-from BlockFrame.database_service.defaultmodel import DefaultChunkModel
+from BlockFrame import block_frame
 
+# initialize BlockFrame
 config_path = pathlib.Path("./config.json").absolute()
-block_frame = BlockFrame(config_path, option="generic")
+block_frame = block_frame.BlockFrame(config_path, option="generic")
 
-chunker = block_frame.chunker
-fetcher = block_frame.fetcher
-chunker_db = block_frame.database
 
-chunker_db.create_table(DefaultChunkModel)
+# chunking
+block_frame.chunker.target(file_name="image.jpg", size=5)
 
-chunker.target("image.jpg", size=5)
+block_frame.chunker.generic_chunking()
 
-chunker.generic_chunking()
 
-fetcher.target("image.jpg")
+# fetcher
+block_frame.fetcher.target("image.jpg")
 
-print(fetcher.collect_chunks())
-
-fetcher.fetch()
+block_frame.fetcher.fetch()
 ```
 
 # Collaboration Tips
