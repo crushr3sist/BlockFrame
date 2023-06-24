@@ -1,9 +1,8 @@
 from typing import Literal, Union
 
 from BlockFrame.chunking_service.chunking import ChunkHandler
-from BlockFrame.chunking_service.fetcher import Fetcher
-
 from BlockFrame.chunking_service.config import Config
+from BlockFrame.chunking_service.fetcher import Fetcher
 from BlockFrame.database_service.database import BlockFrameDatabase
 
 

@@ -1,14 +1,17 @@
 import contextlib
+
 from BlockFrame.database_service.defaultmodel import DefaultChunkModel
 from BlockFrame.database_service.getters import BlockFrameDatabaseGetters
-from BlockFrame.database_service.initalisation import (
-    BlockFrameDatabaseInit,
-    DatabaseInterface,
-)
+from BlockFrame.database_service.initalisation import (BlockFrameDatabaseInit,
+                                                       DatabaseInterface)
 
 
 class BlockFrameDatabase(BlockFrameDatabaseGetters, BlockFrameDatabaseInit):
     def __init__(self, *args, **kwargs):
+        """
+        This is the initialization function for a class that creates a database table and sets up a database
+        interface object.
+        """
         self.class_model = (
             DefaultChunkModel
             if kwargs.get("class_model") is not None

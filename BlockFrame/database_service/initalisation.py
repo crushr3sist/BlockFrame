@@ -1,6 +1,7 @@
+from abc import ABC
+
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
-from abc import ABC
 
 
 class DatabaseInterface(ABC):

@@ -1,6 +1,8 @@
-import pytest
 import pathlib
 import shutil
+
+import pytest
+
 from BlockFrame.chunking_service.chunking import ChunksExistsError
 from BlockFrame.database_service.defaultmodel import DefaultChunkModel
 

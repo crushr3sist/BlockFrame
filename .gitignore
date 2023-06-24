@@ -3,7 +3,7 @@ build.bat
 *.bat
 *.jpg
 *.txt
-
+*.db
 utils.py
 icons/
 venv/

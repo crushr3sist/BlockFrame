@@ -2,9 +2,10 @@ import hashlib
 import math
 import os
 import pathlib
+import tempfile
 import uuid
 from datetime import datetime, timedelta
-import tempfile
+
 from ..database_service.defaultmodel import ChunkHashes, DefaultChunkModel
 
 

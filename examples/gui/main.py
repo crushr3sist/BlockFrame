@@ -1,7 +1,7 @@
-from flask import Flask, request, redirect, url_for
-import BlockFrame
+from flask import Flask, redirect, request, url_for
 from flaskwebgui import FlaskUI
 
+import BlockFrame
 
 app = Flask(__name__)
 block_frame = BlockFrame.BlockFrame(config="config.json", option="generic")

@@ -31,5 +31,5 @@ setup(
         "Documentation": "https://blockframe.readthedocs.io/",
         "Source Code": "https://github.com/Wizock/BlockFrame/",
     },
-    keywords="file chunking, data-store, webapps, software",
+    keywords="file chunking, chunker, sqlalchemy, config, data-store, webapps, software",
 )

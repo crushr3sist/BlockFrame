@@ -1,7 +1,8 @@
-from typing import Iterable
-from ..database_service.defaultmodel import DefaultChunkModel
 import glob
 import re
+from typing import Iterable
+
+from ..database_service.defaultmodel import DefaultChunkModel
 
 
 class Fetcher:
