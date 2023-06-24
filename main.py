@@ -10,13 +10,12 @@ fetcher = block_frame.fetcher
 chunker_db = block_frame.database
 
 
-data = chunker_db.get_all()
 
+data = chunker_db.get_all()
 
 chunker.target(file_name="image.jpg", size=5)
 
-
-chunker.generic_chunking()
+chunker.apply()
 
 fetcher.target("image.jpg")
 

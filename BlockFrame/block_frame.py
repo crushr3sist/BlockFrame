@@ -4,6 +4,13 @@ from BlockFrame.chunking_service.chunking import ChunkHandler
 from BlockFrame.chunking_service.config import Config
 from BlockFrame.chunking_service.fetcher import Fetcher
 from BlockFrame.database_service.database import BlockFrameDatabase
+from BlockFrame.enhancement_service import (
+    compression,
+    encryption,
+    integrity,
+    metadata,
+    vectorised_search,
+)
 
 
 class BlockFrame:
@@ -13,6 +20,9 @@ class BlockFrame:
         option: Union[
             Literal["generic"], Literal["time"], Literal["secure"], Literal["custom"]
         ],
+        encryption_key: str | bytes,
+        encryption_algorithm: Union[Literal["Fernet"], Literal["RSA"], Literal["AES"]],
+        compression_algorithm,
     ):
         """
         This function initializes several objects including a Config object, a BlockFrameDatabase
@@ -28,8 +38,13 @@ class BlockFrame:
                 ]
         """
         self.config = Config(config)
+        if config.config_id["encrypt"] == True and isinstance(encryption_key, None):
+            raise Exception(
+                "Config has encryption enabled, please provide encryption key"
+            )
 
         self.database = BlockFrameDatabase(db_config=self.config.config_id)
+
         self.chunker = ChunkHandler(
             db=self.database.get_db(), config=self.config.config_id, option=option
         )

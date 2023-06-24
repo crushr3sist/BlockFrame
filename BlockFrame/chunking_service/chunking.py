@@ -266,7 +266,7 @@ class ChunkHandler:
             session.add(model)
             session.commit()
 
-    def generic_chunking(self):
+    def apply(self):
         """
         This function performs generic chunking, hashing, and saving to a database.
         """
