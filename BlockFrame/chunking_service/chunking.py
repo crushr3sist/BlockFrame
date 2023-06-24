@@ -12,6 +12,7 @@ class ChunksExistsError(Exception):
     pass
 
 
+# The ChunkHandler class initializes various attributes related to chunking files.
 class ChunkHandler:
     def __init__(self, *args, **kwargs) -> None:
         self.config = kwargs.get("config")
@@ -32,6 +33,20 @@ class ChunkHandler:
         files: list = None,
         custom_chunker: callable = None,
     ):
+        """
+        This function sets various attributes related to a file, including its name, size, and hash values.
+
+        :param file_bytes: A bytes object representing the contents of a file
+        :param file_name: The name of the file to be targeted for chunking and hashing
+        :param size: The size parameter is used to specify the size of the file in bytes. It is an optional
+        parameter and can be used to provide the size of the file if it is not provided in the file_bytes
+        parameter
+        :param files: A list of file paths to be included in the target
+        :type files: list
+        :param custom_chunker: A callable function that can be used to customize the chunking process of the
+        file
+        :type custom_chunker: callable
+        """
         self.custom_chunker = custom_chunker
         self.primary_uuid = uuid.uuid4()
         self.original_file_hash = ""
@@ -55,6 +70,9 @@ class ChunkHandler:
             raise FileNotFoundError(f"{self.file_name} does not exist")
 
     def generic_chunks(self):
+        """
+        This function generates chunks of a file's bytes based on a specified size.
+        """
         if self.file_bytes:
             _size = len(self.file_bytes) // self.size
             for i in range(self.size):
@@ -66,6 +84,10 @@ class ChunkHandler:
                     yield content
 
     def time_based_chunks(self):
+        """
+        This function reads a file in chunks and estimates the time required to transfer the remaining data
+        based on the transfer rate of the previous chunks.
+        """
         self.chunk_counter = 0
         with open(self.file_name, "rb") as f:
             while True:
@@ -104,6 +126,10 @@ class ChunkHandler:
                     )
 
     def secure_chunks(self):
+        """
+        This function generates secure chunks of a file by adjusting the chunk size based on collision
+        probability.
+        """
         with open(self.file_name, "rb") as f:
             file_size = os.stat(self.file_name).st_size
             while True:
@@ -112,7 +138,6 @@ class ChunkHandler:
                 if num_chunks >= 4:
                     break
                 chunk_size = math.ceil(file_size / 4)
-                num_chunks = 4
                 self.chunk_size_estimate = chunk_size
 
             while content := f.read(chunk_size):
@@ -140,6 +165,10 @@ class ChunkHandler:
                     )
 
     def produce_chunks(self):
+        """
+        This function produces chunks of a file based on different options and saves them to a directory
+        while also calculating their hashes.
+        """
         if self.option == "custom":
             split_files = self.custom_chunker(self.file_name, self.size)
 
@@ -186,6 +215,9 @@ class ChunkHandler:
             self.chunk_file_hashes.append(_hash.hexdigest())
 
     def hasher(self):
+        """
+        This function calculates the SHA256 hash of a file in chunks of 1024 bytes.
+        """
         _hash = hashlib.sha256()
         with open(self.file_name, "rb") as file:
             chunk = 0
@@ -195,6 +227,11 @@ class ChunkHandler:
         self.original_file_hash = _hash.hexdigest()
 
     def find_chunks_from_name(self):
+        """
+        This function returns the number of files in a directory that start with a specific string.
+        :return: The function `find_chunks_from_name` returns the number of files in the directory specified
+        by `self.path` that start with the string `"{self.primary_uuid}_chunk_"`.
+        """
         return len(
             [
                 x
@@ -204,6 +241,9 @@ class ChunkHandler:
         )
 
     def save_to_db(self):
+        """
+        This function saves information about a file and its chunks to a database.
+        """
         with self.db as session:
             model = DefaultChunkModel(
                 file_uuid=str(self.primary_uuid),
@@ -226,6 +266,9 @@ class ChunkHandler:
             session.commit()
 
     def generic_chunking(self):
+        """
+        This function performs generic chunking, hashing, and saving to a database.
+        """
         self.produce_chunks()
         self.hasher()
         self.save_to_db()
