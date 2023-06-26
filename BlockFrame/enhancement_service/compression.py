@@ -1,67 +1,98 @@
-import glob
-import re
-from typing import Iterable
-import lz4
 import functools
-import lzf
 import zlib
+import lz4.frame
+import lzf
 import snappy
-from ..database_service.defaultmodel import DefaultChunkModel
 
 
-class Compression:
+class CompressionBase:
+    def compress(self):
+        ...
+
+    def decompress(self):
+        ...
+
+
+class Lz4Compression(CompressionBase):
+    def __init__(self, *args, **kwargs):
+        ...
+
+    @functools.lru_cache
+    def compress(self, file_bytes):
+        return lz4.frame.compress(file_bytes)
+
+    @functools.lru_cache
+    def decompress(self, file_bytes):
+        return lz4.frame.decompress(file_bytes)
+
+
+class ZlibCompression(CompressionBase):
+    def __init__(self, *args, **kwargs):
+        ...
+
+    @functools.lru_cache
+    def compress(self, file_bytes):
+        return zlib.compress(file_bytes, level=zlib.Z_BEST_COMPRESSION)
+
+    @functools.lru_cache
+    def decompress(self, file_bytes):
+        return zlib.decompress(file_bytes)
+
+
+class LzfCompression(CompressionBase):
+    def __init__(self, *args, **kwargs):
+        ...
+
+    @functools.lru_cache
+    def compress(self):
+        return lzf.compress(self.file_bytes)
+
+    @functools.lru_cache
+    def decompress(self, file_bytes):
+        ...
+
+
+class SnappyCompression(CompressionBase):
+    def __init__(self, *args, **kwargs):
+        ...
+
+    @functools.lru_cache
+    def compress(self):
+        return snappy.compress(self.file_bytes)
+
+    @functools.lru_cache
+    def decompress(self, file_bytes):
+        ...
+
+
+class CompressionController:
     def __init__(self, *args, **kwargs) -> None:
-        self.file_bytes = kwargs.get("file_bytes")
-
-    def lz4_compression(self):
-        lz4.compress(self.file_bytes)
-
-    def zlib_compression(self):
-        zlib.compress(self.file_bytes)
-
-    def lzf_compression(self):
-        # lzf.compress(self.file_bytes)
-        ...
-
-    def snappy_compression(self):
-        # snappy.compress(self.file_bytes)
-        ...
-
-
-class Decompression:
-    def __init__(self, *args, **kwargs) -> None:
-        self.file_bytes = kwargs.get("file_bytes")
-
-    def lz4_decompression(self):
-        ...
-
-    def zlib_decompression(self):
-        ...
-
-    def lzf_decompression(self):
-        # lzf.uncompress(self.file_bytes, len(self.file_bytes))
-        ...
-
-    def snappy_decompression(self):
-        ...
-
-
-class CompressionController(Compression, Decompression):
-    def __init__(self, *args, **kwargs) -> None:
-        """{
-            "fast_compression": "lz4",\n
-            "higher_compression": "zlib",\n
-            "balanced: "snappy",\n
-            "simple": "lzf",\n
-        }
+        """
+        1: fast_compression -> lz4
+        2: higher_compression -> zlib
+        3: balanced -> snappy
+        4: simple -> lzf
         """
         super().__init__()
         self.config = kwargs.get("config")
-        self.path = self.config["file-storage-path"]
-        self.db = kwargs.get("db")
+        self.compression_level = self.config["enhancement-settings"]["compression"]
 
-    def apply_compression(self):
-        ...
+    def get_compression_method(self, n: int):
+        if n == 1:
+            return Lz4Compression()
+        if n == 2:
+            return ZlibCompression()
+        if n == 3:
+            return LzfCompression()
+        if n == 4:
+            return SnappyCompression()
 
-    def apply_decompression(self):
-        ...
+    def apply_compression(self, file_bytes):
+        return self.get_compression_method(int(self.compression_level)).compress(
+            file_bytes=file_bytes
+        )
+
+    def apply_decompression(self, file_bytes):
+        return self.get_compression_method(int(self.compression_level)).decompress(
+            file_bytes=file_bytes
+        )

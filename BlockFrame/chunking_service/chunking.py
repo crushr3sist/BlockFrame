@@ -25,6 +25,7 @@ class ChunkHandler:
         self.chunk_counter = 0
         self.window_size = 10
         self.chunk_time_estimate = timedelta(seconds=1)
+        self.compressor = kwargs.get("enhancements")
 
     def target(
         self,
@@ -57,6 +58,7 @@ class ChunkHandler:
         self.chunk_file_uid = []
         self.files = files
         self.size = size
+        self.compressed_flag = False
         if file_bytes:
             with tempfile.NamedTemporaryFile(delete=True) as temp_file:
                 if file_name and isinstance(file_name, str):
@@ -64,11 +66,23 @@ class ChunkHandler:
                 else:
                     temp_file.write(file_bytes)
                     self.file_name = temp_file.name
-
-        elif self.file_name is None:
+        if self.file_bytes and self.file_name is not None:
+            raise ValueError("Please either provide file_name or file_bytes")
+        if self.file_name is None:
             raise ValueError("Either file_bytes or file_name must be provided")
+
+        if self.config["enhancements"]["compress"]:
+            self.compress_file()
+            self.compressed_flag = True
+
         elif not pathlib.Path(self.file_name).exists:
             raise FileNotFoundError(f"{self.file_name} does not exist")
+
+    def compress_file(self):
+        if self.file_name:
+            file_bytes = open(self.file_name, "rb").read()
+            self.file_bytes = self.compressor.compression.apply_compression(file_bytes)
+            self.compressed_flag = True
 
     def generic_chunks(self):
         """
@@ -91,6 +105,8 @@ class ChunkHandler:
         """
         self.chunk_counter = 0
         with open(self.file_name, "rb") as f:
+            if self.compressed_flag == True:
+                f = self.file_bytes
             while True:
                 start_time = (
                     datetime.now()
@@ -132,7 +148,9 @@ class ChunkHandler:
         probability.
         """
         with open(self.file_name, "rb") as f:
-            file_size = os.stat(self.file_name).st_size
+            if self.compressed_flag == True:
+                f = self.file_bytes
+                file_size = os.stat(self.file_name).st_size
             while True:
                 chunk_size = self.chunk_size_estimate
                 num_chunks = math.ceil(file_size / chunk_size)

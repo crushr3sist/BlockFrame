@@ -10,8 +10,8 @@ class Enhancements:
         self.config = kwargs.get("config")
         self.db = kwargs.get("db")
 
-        self.compression = CompressionController()
-        self.encryption = EncryptionController()
-        self.integrity = IntegrityController()
-        self.metadata = MetadataController()
-        self.search = SearchController()
+        self.compression = CompressionController(config=self.config, db=self.db)
+        self.encryption = EncryptionController(config=self.config, db=self.db)
+        self.integrity = IntegrityController(config=self.config, db=self.db)
+        self.metadata = MetadataController(config=self.config, db=self.db)
+        self.search = SearchController(config=self.config, db=self.db)

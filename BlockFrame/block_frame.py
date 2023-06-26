@@ -14,18 +14,19 @@ class BlockFrame:
         option: Union[
             Literal["generic"], Literal["time"], Literal["secure"], Literal["custom"]
         ],
-        encryption_key: str | bytes,
-        encryption_algorithm: Union[Literal["Fernet"], Literal["RSA"], Literal["AES"]],
-        compression_algorithm,
-    ):
+        encryption_key: str | bytes | None = None,
+    ):  # sourcery skip: raise-specific-error
         self.config = Config(config)
-        if config.config_id["encrypt"] == True and isinstance(encryption_key, None):
-            raise Exception(
+        if (
+            self.config.config_id["enhancements"]["encrypt"] is True
+            and encryption_key is None
+        ):
+            raise ValueError(
                 "Config has encryption enabled, please provide encryption key"
             )
 
         self.database = BlockFrameDatabase(db_config=self.config.config_id)
-        self.enhancements = Enhancements(config=self.config, db=self.database)
+        self.enhancements = Enhancements(config=self.config.config_id, db=self.database)
         self.chunker = ChunkHandler(
             db=self.database.get_db(),
             config=self.config.config_id,

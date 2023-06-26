@@ -5,9 +5,13 @@
   },
   "enhancements": {
     "compress": true,
-    "encrypt": true,
+    "encrypt": false,
     "check_integrity": true,
     "extract_metadata": true,
     "fast_search": true
+  },
+  "enhancement-settings": {
+    "compression": 1,
+    "encryption": "FERNET"
   }
 }

@@ -1,6 +1,3 @@
-from ..database_service.defaultmodel import DefaultChunkModel
-
-
 class Encryption:
     def __init__(self, *args, **kwargs) -> None:
         self.config = kwargs.get("config")
@@ -25,4 +22,5 @@ class Decryption:
 
 
 class EncryptionController:
-    ...
+    def __init__(self, *args, **kwargs) -> None:
+        ...
