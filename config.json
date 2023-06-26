@@ -3,6 +3,11 @@
   "database": {
     "uri": "sqlite:///blockframe_db.db"
   },
-  "compress": true,
-  "encrypt": true
+  "enhancements": {
+    "compress": true,
+    "encrypt": true,
+    "check_integrity": true,
+    "extract_metadata": true,
+    "fast_search": true
+  }
 }

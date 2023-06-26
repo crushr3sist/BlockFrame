@@ -1,4 +1,3 @@
-
 from ..database_service.defaultmodel import DefaultChunkModel
 
 
@@ -8,8 +7,11 @@ class Encryption:
         self.path = self.config["file-storage-path"]
         self.db = kwargs.get("db")
 
-    def apply_encryption(self):...
-    def save_compression_signature(self):...
+    def apply_encryption(self):
+        ...
+
+    def save_compression_signature(self):
+        ...
 
 
 class Decryption:
@@ -18,5 +20,9 @@ class Decryption:
         self.path = self.config["file-storage-path"]
         self.db = kwargs.get("db")
 
-    def decrypt(self):...
-    
+    def decrypt(self):
+        ...
+
+
+class EncryptionController:
+    ...

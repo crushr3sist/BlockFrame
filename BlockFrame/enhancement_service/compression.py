@@ -48,16 +48,17 @@ class Decompression:
 
 class CompressionController(Compression, Decompression):
     def __init__(self, *args, **kwargs) -> None:
+        """{
+            "fast_compression": "lz4",\n
+            "higher_compression": "zlib",\n
+            "balanced: "snappy",\n
+            "simple": "lzf",\n
+        }
+        """
         super().__init__()
         self.config = kwargs.get("config")
         self.path = self.config["file-storage-path"]
         self.db = kwargs.get("db")
-        {
-            "fast_compression": "lz4",
-            "higher_compression": "zlib",
-            "balanced": "snappy",
-            "simple": "lzf",
-        }
 
     def apply_compression(self):
         ...
