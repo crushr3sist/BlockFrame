@@ -1,3 +1,7 @@
 {
-  "docwriter.style": "Auto-detect"
+  "docwriter.style": "Auto-detect",
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "python.formatting.provider": "none"
 }
