@@ -13,6 +13,7 @@ class DefaultChunkModel(DatabaseInterface().Base):
     original_file_hash = Column(String)
     split_length = Column(Integer)
     linking_id = Column(String)
+    compression_int = Column(Integer)
     hashes = Relationship("ChunkHashes", backref="default_chunk")
 
     def __init__(self, *args, **kwargs):
@@ -23,6 +24,7 @@ class DefaultChunkModel(DatabaseInterface().Base):
         self.split_length = kwargs.get("split_length")
         self.linking_id = kwargs.get("linking_id")
         self.hashes = kwargs.get("hashes", [])
+        self.compression_int = kwargs.get("compression_int")
 
 
 class ChunkHashes(DatabaseInterface().Base):

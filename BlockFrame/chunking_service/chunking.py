@@ -66,8 +66,10 @@ class ChunkHandler:
                 else:
                     temp_file.write(file_bytes)
                     self.file_name = temp_file.name
+
         if self.file_bytes and self.file_name is not None:
             raise ValueError("Please either provide file_name or file_bytes")
+
         if self.file_name is None:
             raise ValueError("Either file_bytes or file_name must be provided")
 
@@ -271,6 +273,7 @@ class ChunkHandler:
                 original_file_hash=self.original_file_hash,
                 split_length=len(self.chunk_file_uid),
                 linking_id=str(self.primary_uuid),
+                compression_int=self.config["enhancement-settings"]["compression"],
             )
             for _hash, _uid in zip(self.chunk_file_hashes, self.chunk_file_uid):
                 model.hashes.append(

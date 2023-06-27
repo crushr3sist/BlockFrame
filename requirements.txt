@@ -1,5 +1,5 @@
 cryptography==39.0.0
-snappy==1.03
+python-snappy==1.03
 lz4==4.3.2
 lzf==0.1
 pytest==7.2.1

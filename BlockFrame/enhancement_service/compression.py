@@ -44,7 +44,7 @@ class LzfCompression(CompressionBase):
         ...
 
     @functools.lru_cache
-    def compress(self):
+    def compress(self, file_bytes):
         return lzf.compress(self.file_bytes)
 
     @functools.lru_cache
@@ -57,12 +57,12 @@ class SnappyCompression(CompressionBase):
         ...
 
     @functools.lru_cache
-    def compress(self):
-        return snappy.compress(self.file_bytes)
+    def compress(self, file_bytes):
+        return snappy.compress(str(self.file_bytes))
 
     @functools.lru_cache
     def decompress(self, file_bytes):
-        ...
+        return snappy.uncompress(str(self.file_bytes))
 
 
 class CompressionController:

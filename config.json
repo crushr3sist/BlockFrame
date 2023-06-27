@@ -11,7 +11,7 @@
     "fast_search": true
   },
   "enhancement-settings": {
-    "compression": 1,
+    "compression": 4,
     "encryption": "FERNET"
   }
 }
