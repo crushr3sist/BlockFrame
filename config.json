@@ -5,7 +5,7 @@
   },
   "enhancements": {
     "compress": true,
-    "encrypt": false,
+    "encrypt": true,
     "check_integrity": true,
     "extract_metadata": true,
     "fast_search": true

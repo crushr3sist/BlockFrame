@@ -1,5 +1,6 @@
 import functools
 import zlib
+
 import lz4.frame
 import lzf
 import snappy

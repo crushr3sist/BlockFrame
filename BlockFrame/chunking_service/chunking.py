@@ -5,7 +5,7 @@ import pathlib
 import tempfile
 import uuid
 from datetime import datetime, timedelta
-
+import typing
 from ..database_service.defaultmodel import ChunkHashes, DefaultChunkModel
 
 
@@ -25,7 +25,7 @@ class ChunkHandler:
         self.chunk_counter = 0
         self.window_size = 10
         self.chunk_time_estimate = timedelta(seconds=1)
-        self.compressor = kwargs.get("enhancements")
+        self.enhancements = kwargs.get("enhancements")
 
     def target(
         self,
@@ -33,22 +33,8 @@ class ChunkHandler:
         file_name=None,
         size=None,
         files: list = None,
-        custom_chunker: callable = None,
+        custom_chunker: typing.Callable = None,
     ):
-        """
-        This function sets various attributes related to a file, including its name, size, and hash values.
-
-        :param file_bytes: A bytes object representing the contents of a file
-        :param file_name: The name of the file to be targeted for chunking and hashing
-        :param size: The size parameter is used to specify the size of the file in bytes. It is an optional
-        parameter and can be used to provide the size of the file if it is not provided in the file_bytes
-        parameter
-        :param files: A list of file paths to be included in the target
-        :type files: list
-        :param custom_chunker: A callable function that can be used to customize the chunking process of the
-        file
-        :type custom_chunker: callable
-        """
         self.custom_chunker = custom_chunker
         self.primary_uuid = uuid.uuid4()
         self.original_file_hash = ""
@@ -77,13 +63,23 @@ class ChunkHandler:
             self.compress_file()
             self.compressed_flag = True
 
+        if self.config["enhancements"]["encrypt"]:
+            self.encrypt_file()
+
         elif not pathlib.Path(self.file_name).exists:
             raise FileNotFoundError(f"{self.file_name} does not exist")
+
+    def encrypt_file(self):
+        if self.file_name:
+            file_bytes = open(self.file_name, "rb").read()
+            self.file_bytes = self.enhancements.encryption.apply_encryption(file_bytes)
 
     def compress_file(self):
         if self.file_name:
             file_bytes = open(self.file_name, "rb").read()
-            self.file_bytes = self.compressor.compression.apply_compression(file_bytes)
+            self.file_bytes = self.enhancements.compression.apply_compression(
+                file_bytes
+            )
             self.compressed_flag = True
 
     def generic_chunks(self):
@@ -107,7 +103,7 @@ class ChunkHandler:
         """
         self.chunk_counter = 0
         with open(self.file_name, "rb") as f:
-            if self.compressed_flag == True:
+            if self.compressed_flag is True:
                 f = self.file_bytes
             while True:
                 start_time = (
@@ -145,12 +141,8 @@ class ChunkHandler:
                     )
 
     def secure_chunks(self):
-        """
-        This function generates secure chunks of a file by adjusting the chunk size based on collision
-        probability.
-        """
         with open(self.file_name, "rb") as f:
-            if self.compressed_flag == True:
+            if self.compressed_flag is True:
                 f = self.file_bytes
                 file_size = os.stat(self.file_name).st_size
             while True:
@@ -186,10 +178,6 @@ class ChunkHandler:
                     )
 
     def produce_chunks(self):
-        """
-        This function produces chunks of a file based on different options and saves them to a directory
-        while also calculating their hashes.
-        """
         if self.option == "custom":
             split_files = self.custom_chunker(self.file_name, self.size)
 
@@ -236,9 +224,6 @@ class ChunkHandler:
             self.chunk_file_hashes.append(_hash.hexdigest())
 
     def hasher(self):
-        """
-        This function calculates the SHA256 hash of a file in chunks of 1024 bytes.
-        """
         _hash = hashlib.sha256()
         with open(self.file_name, "rb") as file:
             chunk = 0
@@ -248,11 +233,6 @@ class ChunkHandler:
         self.original_file_hash = _hash.hexdigest()
 
     def find_chunks_from_name(self):
-        """
-        This function returns the number of files in a directory that start with a specific string.
-        :return: The function `find_chunks_from_name` returns the number of files in the directory specified
-        by `self.path` that start with the string `"{self.primary_uuid}_chunk_"`.
-        """
         return len(
             [
                 x
@@ -262,9 +242,6 @@ class ChunkHandler:
         )
 
     def save_to_db(self):
-        """
-        This function saves information about a file and its chunks to a database.
-        """
         with self.db as session:
             model = DefaultChunkModel(
                 file_uuid=str(self.primary_uuid),
@@ -288,9 +265,6 @@ class ChunkHandler:
             session.commit()
 
     def apply(self):
-        """
-        This function performs generic chunking, hashing, and saving to a database.
-        """
         self.produce_chunks()
         self.hasher()
         self.save_to_db()
