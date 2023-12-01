@@ -3,7 +3,9 @@ import pathlib
 from BlockFrame import block_frame
 
 config_path = pathlib.Path("./config.json").absolute()
-block_frame = block_frame.BlockFrame(config_path, option="generic")
+block_frame = block_frame.BlockFrame(
+    config_path, option="generic", encryption_key="ronny"
+)
 
 
 try:

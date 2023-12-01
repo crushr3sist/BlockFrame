@@ -10,7 +10,11 @@ class Fetcher:
         self.config = kwargs.get("config")
         self.path = self.config["file-storage-path"]
         self.db = kwargs.get("db")
+<<<<<<< HEAD
         self.decompression = kwargs.get("enhancements")
+=======
+        self.enhancements = kwargs.get("enhancements")
+>>>>>>> af2468f5c26fdd73fdd88b22780e5049c62444e1
 
     def target(self, file: Iterable[str] | str):
         """
@@ -67,12 +71,22 @@ class Fetcher:
         """
         self.construct_file()
         with open(f"./reconstructed/{self.file_id.file_name}", "wb+") as f:
+<<<<<<< HEAD
             if self.config["enhancements"]["compress"]:
                 f.write(
                     self.decompression.compression.apply_decompression(self.file_bytes)
                 )
             else:
                 f.write(self.file_bytes)
+=======
+            decompressed = self.enhancements.compression.apply_decompression(
+                self.file_bytes
+            )
+            decrypted = self.enhancements.compression.apply_decompression(
+                self.file_bytes
+            )
+            f.write()
+>>>>>>> af2468f5c26fdd73fdd88b22780e5049c62444e1
 
     def as_bytes(self):
         return self.file_bytes
