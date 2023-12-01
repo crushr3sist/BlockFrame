@@ -6,6 +6,13 @@ from BlockFrame.enhancement_service.vectorised_search import SearchController
 
 
 class Enhancements:
+    """
+    order:
+        1 - compression
+        2 - encryption
+        3 - integrity check
+    """
+
     def __init__(self, *args, **kwargs):
         self.config = kwargs.get("config")
         self.db = kwargs.get("db")

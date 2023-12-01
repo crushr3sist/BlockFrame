@@ -6,6 +6,10 @@ import tempfile
 import uuid
 from datetime import datetime, timedelta
 import typing
+import concurrent.futures
+
+from BlockFrame.enhancement_service.encryption import EncryptionController
+
 from ..database_service.defaultmodel import ChunkHashes, DefaultChunkModel
 
 
@@ -25,7 +29,8 @@ class ChunkHandler:
         self.chunk_counter = 0
         self.window_size = 10
         self.chunk_time_estimate = timedelta(seconds=1)
-        self.enhancements = kwargs.get("enhancements")
+        self.encryption_key = None  # Initialize encryption_key attribute
+        self.enhancements: EncryptionController = kwargs.get("enhancements")
 
     def target(
         self,
@@ -45,6 +50,8 @@ class ChunkHandler:
         self.files = files
         self.size = size
         self.compressed_flag = False
+        self.encrypted_flag = False
+
         if file_bytes:
             with tempfile.NamedTemporaryFile(delete=True) as temp_file:
                 if file_name and isinstance(file_name, str):
@@ -58,21 +65,31 @@ class ChunkHandler:
 
         if self.file_name is None:
             raise ValueError("Either file_bytes or file_name must be provided")
+        elif not pathlib.Path(self.file_name).exists():
+            raise FileNotFoundError(f"{self.file_name} does not exist")
 
-        if self.config["enhancements"]["compress"]:
-            self.compress_file()
-            self.compressed_flag = True
+        self.process_data()
 
+    def process_data(self):
         if self.config["enhancements"]["encrypt"]:
             self.encrypt_file()
 
-        elif not pathlib.Path(self.file_name).exists:
-            raise FileNotFoundError(f"{self.file_name} does not exist")
+        if self.config["enhancements"]["compress"]:
+            self.compress_file()
 
     def encrypt_file(self):
         if self.file_name:
             file_bytes = open(self.file_name, "rb").read()
-            self.file_bytes = self.enhancements.encryption.apply_encryption(file_bytes)
+
+            try:
+                self.encryption_key = self.config["enhancement-settings"]["secret_key"]
+            except KeyError:
+                # Handle the KeyError, e.g., by generating a new key
+                self.encryption_key = self.enhancements.encryption.generate_key()
+
+            self.file_bytes = self.enhancements.encryption.apply_encryption(
+                file_bytes, self.encryption_key
+            )
 
     def compress_file(self):
         if self.file_name:
@@ -206,22 +223,31 @@ class ChunkHandler:
                 raise ChunksExistsError("file is already chunked")
 
         count = 0
-        for chunk in split_files:
-            _hash = hashlib.sha256()
-            _file_chunk_uid = uuid.uuid4()
-            chunk_name = f"{self.primary_uuid}_chunk_{_file_chunk_uid}_{count}.chunk"
-            if not pathlib.Path(self.path).is_dir():
-                pathlib.Path(self.path).mkdir()
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = [
+                executor.submit(self.process_chunk, chunk, count)
+                for count, chunk in enumerate(split_files)
+            ]
 
-            with open(
-                f"{pathlib.Path(self.path).absolute()}/{chunk_name}",
-                "wb+",
-            ) as f:
-                _hash.update(f.read())
-                count += 1
-                f.write(bytes(chunk))
-            self.chunk_file_uid.append(_file_chunk_uid)
-            self.chunk_file_hashes.append(_hash.hexdigest())
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    future.result()
+                except Exception as e:
+                    print(f"Error processing chunk: {e}")
+
+    def process_chunk(self, chunk, count):
+        _hash = hashlib.sha256()
+        _file_chunk_uid = uuid.uuid4()
+        chunk_name = f"{self.primary_uuid}_chunk_{_file_chunk_uid}_{count}.chunk"
+        if not pathlib.Path(self.path).is_dir():
+            pathlib.Path(self.path).mkdir()
+
+        with open(f"{pathlib.Path(self.path).absolute()}/{chunk_name}", "wb+") as f:
+            _hash.update(f.read())
+            count += 1
+            f.write(bytes(chunk))
+        self.chunk_file_uid.append(_file_chunk_uid)
+        self.chunk_file_hashes.append(_hash.hexdigest())
 
     def hasher(self):
         _hash = hashlib.sha256()
@@ -243,6 +269,8 @@ class ChunkHandler:
 
     def save_to_db(self):
         with self.db as session:
+            compression_int = 1 if self.config["enhancements"]["compress"] else 0
+
             model = DefaultChunkModel(
                 file_uuid=str(self.primary_uuid),
                 file_name=self.file_name,
@@ -250,16 +278,21 @@ class ChunkHandler:
                 original_file_hash=self.original_file_hash,
                 split_length=len(self.chunk_file_uid),
                 linking_id=str(self.primary_uuid),
+                compression_int=compression_int,
+                secret_key=self.encryption_key,
             )
-            for _hash, _uid in zip(self.chunk_file_hashes, self.chunk_file_uid):
-                model.hashes.append(
-                    ChunkHashes(
-                        chunk_hash=_hash,
-                        linking_id=str(self.primary_uuid),
-                        chunk_length=len(_hash),
-                        chunk_size=len(str(_uid)),
-                    )
+
+            chunk_hashes = [
+                ChunkHashes(
+                    chunk_hash=_hash,
+                    linking_id=str(self.primary_uuid),
+                    chunk_length=len(_hash),
+                    chunk_size=len(str(_uid)),
                 )
+                for _hash, _uid in zip(self.chunk_file_hashes, self.chunk_file_uid)
+            ]
+
+            model.hashes.extend(chunk_hashes)
             session.add(model)
             session.commit()
 

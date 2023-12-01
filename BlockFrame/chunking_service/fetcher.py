@@ -1,5 +1,6 @@
 import glob
 import re
+import time
 from typing import Iterable
 
 from ..database_service.defaultmodel import DefaultChunkModel
@@ -60,27 +61,46 @@ class Fetcher:
         self.file_bytes = b""
         for chunk in self.collect_chunks():
             with open(chunk, "rb") as chunk_file:
-                self.file_bytes += chunk_file.read()
+                chunk_data = chunk_file.read()
+                print(f"Appending {len(chunk_data)} bytes from {chunk}")
+                self.file_bytes += chunk_data
 
     def fetch(self):
         """
         This function fetches a file by constructing it and writing its bytes to a new file.
         """
         self.construct_file()
-        with open(f"./reconstructed/{self.file_id.file_name}", "wb+") as f:
-            if self.config["enhancements"]["compress"]:
-                f.write(
-                    self.decompression.compression.apply_decompression(self.file_bytes)
+        time.sleep(0.05)
+        output_path = f"./reconstructed/{self.file_id.file_name}"
+        print(f"secret key: {self.file_id.secret_key}")
+
+        with open(output_path, "wb+") as f:
+            decrypted_bytes = self.file_bytes
+
+            if self.config["enhancements"]["encrypt"]:
+                # Assuming your file query object has an attribute 'secret_key'
+                decryption_key = self.file_id.secret_key
+                print(f"Decrypting {len(decrypted_bytes)} bytes...")
+                decrypted_bytes = self.enhancements.encryption.apply_decryption(
+                    decrypted_bytes, decryption_key
                 )
+                print(
+                    f"Decryption complete. Decrypted size: {len(decrypted_bytes)} bytes"
+                )
+
+            if self.config["enhancements"]["compress"]:
+                print(f"Decompressing {len(decrypted_bytes)} bytes...")
+                decompressed_bytes = self.decompression.compression.apply_decompression(
+                    decrypted_bytes
+                )
+                print(
+                    f"Decompression complete. Decompressed size: {len(decompressed_bytes)} bytes"
+                )
+                f.write(decompressed_bytes)
             else:
-                f.write(self.file_bytes)
-            decompressed = self.enhancements.compression.apply_decompression(
-                self.file_bytes
-            )
-            decrypted = self.enhancements.compression.apply_decompression(
-                self.file_bytes
-            )
-            f.write()
+                f.write(decrypted_bytes)
+
+        print(f"File fetched and saved to: {output_path}")
 
     def as_bytes(self):
         return self.file_bytes

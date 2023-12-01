@@ -13,6 +13,7 @@ class DefaultChunkModel(DatabaseInterface().Base):
     split_length = Column(Integer)
     linking_id = Column(String)
     compression_int = Column(Integer)
+    secret_key = Column(String)  # Added secret_key column
     hashes = relationship("ChunkHashes", backref="default_chunk")
 
     def __init__(self, *args, **kwargs):
@@ -24,6 +25,7 @@ class DefaultChunkModel(DatabaseInterface().Base):
         self.linking_id = kwargs.get("linking_id")
         self.hashes = kwargs.get("hashes", [])
         self.compression_int = kwargs.get("compression_int")
+        self.secret_key = kwargs.get("secret_key")
 
 
 class ChunkHashes(DatabaseInterface().Base):
