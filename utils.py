@@ -35,8 +35,6 @@ def decrypt(filename: str, key: bytes):
         file.write(decrypted_data)
 
 
-
-
 if __name__ == "__main__":
     generate_random_file()
     # key = base64.urlsafe_b64encode(hashlib.sha256(b"password").digest())

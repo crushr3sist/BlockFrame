@@ -1,6 +1,5 @@
 from sqlalchemy import Column, ForeignKey, Integer, String
-from sqlalchemy.orm import Relationship
-
+from sqlalchemy.orm import relationship
 from BlockFrame.database_service.initalisation import DatabaseInterface
 
 
@@ -14,7 +13,7 @@ class DefaultChunkModel(DatabaseInterface().Base):
     split_length = Column(Integer)
     linking_id = Column(String)
     compression_int = Column(Integer)
-    hashes = Relationship("ChunkHashes", backref="default_chunk")
+    hashes = relationship("ChunkHashes", backref="default_chunk")
 
     def __init__(self, *args, **kwargs):
         self.file_uuid = kwargs.get("file_uuid")

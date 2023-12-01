@@ -15,7 +15,7 @@ class BlockFrame:
             Literal["generic"], Literal["time"], Literal["secure"], Literal["custom"]
         ],
         encryption_key: str | bytes | None = None,
-    ):  # sourcery skip: raise-specific-error
+    ):
         self.config = Config(config)
         if (
             self.config.config_id["enhancements"]["encrypt"] is True

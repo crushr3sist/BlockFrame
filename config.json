@@ -4,14 +4,14 @@
     "uri": "sqlite:///blockframe_db.db"
   },
   "enhancements": {
-    "compress": true,
+    "compress": false,
     "encrypt": false,
     "check_integrity": true,
     "extract_metadata": true,
     "fast_search": true
   },
   "enhancement-settings": {
-    "compression": 4,
-    "encryption": "FERNET"
+    "encryption": "FERNET",
+    "secret_key": "oawihefo;iwhe;foaihwef"
   }
 }
