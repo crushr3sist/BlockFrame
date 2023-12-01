@@ -1,12 +1,5 @@
 import functools
 import zlib
-<<<<<<< HEAD
-=======
-
-import lz4.frame
-import lzf
-import snappy
->>>>>>> af2468f5c26fdd73fdd88b22780e5049c62444e1
 
 
 class ZlibCompression:
